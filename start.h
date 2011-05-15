@@ -18,11 +18,12 @@ public:
 
 private:
     Ui::Start *ui;
-    CardDB* db;
+    CardDB *db;
 
 public slots:
     void getSetDir();
     void loadSetList();
+    void viewSet();
 };
 
 #endif // START_H

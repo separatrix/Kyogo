@@ -21,7 +21,7 @@ private:
     QHash<QString, CardInfo*> cardHash;
     QHash<QString, SetInfo*> setHash;
     void loadSetFromXml(QXmlStreamReader &xml);
-    void loadCardsFromXml(QXmlStreamReader &xml);
+    void loadCardsFromSet(const QString &setID);
 };
 
 #endif // CARDDB_H

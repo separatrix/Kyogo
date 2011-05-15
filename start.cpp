@@ -12,9 +12,13 @@ Start::Start(QWidget *parent) :
     connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(getSetDir()));
     connect(ui->browseText, SIGNAL(textChanged()), this, SLOT(loadSetList()));
 
+    ui->setTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    connect(ui->setTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(viewSet()));
+
     db = new CardDB;
 
-    ui->setTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->browseText->setPlainText("D:\\kyogo\\sets");
+    //loadSetList();
 }
 
 Start::~Start()
@@ -39,10 +43,22 @@ void Start::loadSetList()
     ui->setTable->setRowCount(setList.size());
     ui->setTable->setColumnCount(2);
     ui->setTable->setSortingEnabled(false);
-    for (int i=0; i<ui->setTable->rowCount(); i++) {
-        ui->setTable->setItem(i,0,new QTableWidgetItem(setList[i]->id()));
-        ui->setTable->setItem(i,1,new QTableWidgetItem(setList[i]->name()));
+    for (int i=0; i < ui->setTable->rowCount(); i++) {
+        QTableWidgetItem *id = new QTableWidgetItem(setList[i]->id());
+        ui->setTable->setItem(i,0,id);
+        id->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+
+        QTableWidgetItem *name = new QTableWidgetItem(setList[i]->name());
+        ui->setTable->setItem(i,1,name);
+        name->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     }
     ui->setTable->setSortingEnabled(true);
     ui->setTable->sortByColumn(0,Qt::AscendingOrder);
+}
+
+void Start::viewSet()
+{
+    QMessageBox msg;
+    msg.setText("Row: "+QString::number(ui->setTable->currentRow()));
+    msg.exec();
 }

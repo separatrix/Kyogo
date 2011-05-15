@@ -56,7 +56,7 @@ void CardDB::loadSetFromXml(QXmlStreamReader &xml)
 }
 
 // Loads cardInfo from xml and stores in cardHash.
-void CardDB::loadCardsFromXml(QXmlStreamReader &xml)
+void CardDB::loadCardsFromSet(const QString &setID)
 {
     while (xml.name() != "setID" && !xml.isEndDocument()) {
         xml.readNext();
