@@ -23,6 +23,13 @@ public:
              const QString &_text = QString(),
              const QString &_setID = QString());
 
+    QString getName() const { return name; }
+    QString getCost() const { return cost; }
+    QString getType() const { return type; }
+    QString getAh() const { return ah; }
+    QString getText() const { return text; }
+    QString getSetID() const { return setID; }
+
 signals:
 
 public slots:

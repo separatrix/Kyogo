@@ -13,12 +13,19 @@ Start::Start(QWidget *parent) :
     connect(ui->browseText, SIGNAL(textChanged()), this, SLOT(loadSetList()));
 
     ui->setTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    connect(ui->setTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(viewSet()));
+    ui->setTable->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    ui->setTable->horizontalHeader()->setStretchLastSection(true);
+    connect(ui->setTable, SIGNAL(itemSelectionChanged()), this, SLOT(viewSet()));
+    connect(ui->setTable, SIGNAL(cellChanged(int,int)), this, SLOT(editSet(int,int)));
+
+    ui->cardTable->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    ui->cardTable->horizontalHeader()->setStretchLastSection(true);
+
+    connect(ui->actionNewSet, SIGNAL(triggered()), this, SLOT(newSet()));
 
     db = new CardDB;
 
     ui->browseText->setPlainText("D:\\kyogo\\sets");
-    //loadSetList();
 }
 
 Start::~Start()
@@ -39,26 +46,76 @@ void Start::loadSetList()
 
     db->loadSetsFromDir(ui->browseText->toPlainText());
     ui->setTable->clear();
+
     QList<SetInfo*> setList = db->getSetList();
     ui->setTable->setRowCount(setList.size());
     ui->setTable->setColumnCount(2);
-    ui->setTable->setSortingEnabled(false);
+
+    disconnect(ui->setTable, SIGNAL(cellChanged(int,int)), this, SLOT(editSet(int,int)));
+    ui->setTable->setSortingEnabled(false);   
     for (int i=0; i < ui->setTable->rowCount(); i++) {
-        QTableWidgetItem *id = new QTableWidgetItem(setList[i]->id());
+        QTableWidgetItem *id = new QTableWidgetItem(setList[i]->getSetID());
         ui->setTable->setItem(i,0,id);
         id->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
 
-        QTableWidgetItem *name = new QTableWidgetItem(setList[i]->name());
+        QTableWidgetItem *name = new QTableWidgetItem(setList[i]->getSetName());
         ui->setTable->setItem(i,1,name);
-        name->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        name->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
     }
     ui->setTable->setSortingEnabled(true);
-    ui->setTable->sortByColumn(0,Qt::AscendingOrder);
+    connect(ui->setTable, SIGNAL(cellChanged(int,int)), this, SLOT(editSet(int,int)));
+
+    ui->setTable->sortByColumn(0,Qt::AscendingOrder);    
+    ui->setTable->setHorizontalHeaderLabels(QStringList()<<"Set ID"<<"Set Name");
 }
 
 void Start::viewSet()
 {
-    QMessageBox msg;
-    msg.setText("Row: "+QString::number(ui->setTable->currentRow()));
-    msg.exec();
+    ui->cardTable->clear();
+
+    QString setID = ui->setTable->item(ui->setTable->currentRow(),0)->text();
+
+    QList<CardInfo*> cardList = db->getCardList(setID);
+    ui->cardTable->setRowCount(cardList.size());
+    ui->cardTable->setColumnCount(5);
+
+    ui->cardTable->setSortingEnabled(false);
+    for (int i=0; i < ui->cardTable->rowCount(); i++) {
+        QTableWidgetItem *name = new QTableWidgetItem(cardList[i]->getName());
+        ui->cardTable->setItem(i,0,name);
+        name->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
+
+        QTableWidgetItem *cost = new QTableWidgetItem(cardList[i]->getCost());
+        ui->cardTable->setItem(i,1,cost);
+        cost->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
+
+        QTableWidgetItem *type = new QTableWidgetItem(cardList[i]->getType());
+        ui->cardTable->setItem(i,2,type);
+        type->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
+
+        QTableWidgetItem *ah = new QTableWidgetItem(cardList[i]->getAh());
+        ui->cardTable->setItem(i,3,ah);
+        ah->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
+
+        QTableWidgetItem *text = new QTableWidgetItem(cardList[i]->getText());
+        ui->cardTable->setItem(i,4,text);
+        text->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
+    }
+    ui->cardTable->setSortingEnabled(true);
+
+    ui->cardTable->setHorizontalHeaderLabels(QStringList()<<"Name"<<"Cost"<<"Type"<<"A/H"<<"Text");
+}
+
+void Start::newSet()
+{
+
+}
+
+void Start::editSet(int row, int col)
+{
+    if (col == 1) {
+        QString setID = ui->setTable->item(row,0)->text();
+        QString setName = ui->setTable->item(row,1)->text();
+        db->updateSetName(setID, setName);
+    }
 }

@@ -24,6 +24,8 @@ public slots:
     void getSetDir();
     void loadSetList();
     void viewSet();
+    void newSet();
+    void editSet(int row, int col);
 };
 
 #endif // START_H

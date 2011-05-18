@@ -13,8 +13,9 @@ private:
 public:
     SetInfo(const QString &_setID = QString(),
             const QString &_setName = QString());
-    QString id() const { return setID; }
-    QString name() const { return setName; }
+    QString getSetID() const { return setID; }
+    QString getSetName() const { return setName; }
+    bool changed = false;
 
 signals:
 

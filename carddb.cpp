@@ -16,56 +16,57 @@ void CardDB::empty()
     cardHash.clear();
 }
 
+QList<CardInfo*> CardDB::getCardList(const QString &setID)
+{
+    QList<CardInfo*> cardList;
+    QHash<QString,QString>::const_iterator i = setRef.find(setID);
+    while (i != setRef.end() && i.key() == setID) {
+        cardList << cardHash.value(i.value());
+        i++;
+    }
+    return cardList;
+}
+
 void CardDB::loadSetsFromDir(const QString &path)
 {
-    QDir setsDir(path);
+    setsDir = QDir(path);
     setsDir.setNameFilters(QStringList("*.xml"));
     QStringList sets = setsDir.entryList();
 
     for (int i=0; i<sets.size(); i++) {
-        QFile file(path+"/"+sets[i]);
-        file.open(QIODevice::ReadOnly);
-        if (!file.isOpen()) {
-            continue;
-        }
+        QFile file(path+"/"+sets[i]);        
+        if (!file.open(QIODevice::ReadOnly))
+            continue;        
         QXmlStreamReader xml(&file);
         xml.readNextStartElement();
         if (xml.name() == "kyogo_set")
-            loadSetFromXml(xml);
+            QString setID = loadSetFromXml(xml);
+            if (setID != "")
+                fileHash.insert(setID, file);
     }
 }
 
-// Loads setID and setName only from xml and stores in setHash.
-void CardDB::loadSetFromXml(QXmlStreamReader &xml)
+// Loads setID and setName and cards from xml and stores in setHash/cardHash.
+QString CardDB::loadSetFromXml(QXmlStreamReader &xml)
 {
     QString setID, setName;
 
-    xml.readNextStartElement();
+    while (xml.name() != "setID" && !xml.isEndDocument()) {
+        xml.readNext();
+    }
+
     if (xml.name() == "setID")
         setID = xml.readElementText();
     else
-        return;
+        return QString();
 
     xml.readNextStartElement();
     if (xml.name() == "setName")
         setName = xml.readElementText();
     else
-        return;
+        return QString();
 
     setHash.insert(setID, new SetInfo(setID,setName));
-}
-
-// Loads cardInfo from xml and stores in cardHash.
-void CardDB::loadCardsFromSet(const QString &setID)
-{
-    while (xml.name() != "setID" && !xml.isEndDocument()) {
-        xml.readNext();
-    }
-    QString setID;
-    if (xml.name() == "setID")
-        setID = xml.readElementText();
-    else
-        return;
 
     while (xml.name() != "cards" && !xml.isEndDocument()) {
         xml.readNext();
@@ -87,7 +88,35 @@ void CardDB::loadCardsFromSet(const QString &setID)
                     else if (xml.name() == "text")
                         text = xml.readElementText();
                 }
-                cardHash.insert(name, new CardInfo(name,cost,type,ah,text,setID));
+                QString cardID = setID + name;
+                cardHash.insert(cardID, new CardInfo(name,cost,type,ah,text,setID));
+                setRef.insertMulti(setID, cardID);
+            }
+        }
+        return setID;
+    }
+}
+
+void CardDB::updateSetName(const QString &setID, const QString &setName)
+{
+    if (setHash.value(setID) != setName) {
+        setHash.remove(setID);
+        setHash.insert(setID,new SetInfo(setID, setName));
+        setHash.value(setID)->changed = true;
+    }
+}
+
+void CardDB::writeChanges()
+{
+    QHash<QString, SetInfo*>::const_iterator i;
+    for (i = setHash.constBegin(); i != fileHash.constEnd(); i++) {
+        if (i.value()->changed) {
+            QFile file = fileHash.value(i.key());
+            if (file.open(QIODevice::WriteOnly)) {
+                QXmlStreamWriter xml(&file);
+
+                xml.setAutoFormatting(true);
+                xml.writeStartDocument();
             }
         }
     }
