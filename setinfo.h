@@ -10,12 +10,15 @@ class SetInfo : public QObject
 private:
     QString setID;
     QString setName;
+    int setNum;
 public:
     SetInfo(const QString &_setID = QString(),
             const QString &_setName = QString());
     QString getSetID() const { return setID; }
     QString getSetName() const { return setName; }
-    bool changed = false;
+    int getSetNum() const { return setNum; }
+    void setSetNum(const int &_setNum);
+    bool changed;
 
 signals:
 

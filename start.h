@@ -19,6 +19,8 @@ public:
 private:
     Ui::Start *ui;
     CardDB *db;
+    enum { SETNUM, SETID, SETNAME, SETVALUES };
+    enum { NAME, COST, TYPE, AH, TEXT, CARDVALUES };
 
 public slots:
     void getSetDir();
@@ -26,6 +28,8 @@ public slots:
     void viewSet();
     void newSet();
     void editSet(int row, int col);
+    void editCard(int row, int col);
+    void writeChanges();
 };
 
 #endif // START_H

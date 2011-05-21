@@ -17,18 +17,23 @@ public:
     void loadSetsFromDir(const QString &path);
     QList<SetInfo*> getSetList() const { return setHash.values(); }
     QList<CardInfo*> getCardList() const { return cardHash.values(); }
-    QList<CardInfo*> getCardList(const QString &setID);
-    bool idExists(const QString &setID) const { return setHash.contains(setID); }
-    void updateSetName(const QString &setID, const QString &setName);
+    QList<CardInfo*> getCardList(const int &setNum);
+    QString getSetID(const int &setNum) const { return setHash.value(setNum)->getSetID(); }
+    bool idExists(const QString &setID);
+    void updateSet(const int &setNum, const QString &setID, const QString &setName);
     void writeChanges();
 
 private:
+    // key: cardID(setNum+cardName)
     QHash<QString, CardInfo*> cardHash;
-    QHash<QString, SetInfo*> setHash;
-    QHash<QString, QString> setRef;
-    QHash<QString, QFile> fileHash;
+    // key: setNum
+    QHash<int, SetInfo*> setHash;
+    // key: setNum; val: cardID (multi)
+    QHash<int, QString> setRef;
+    // key: setNum; val: path to set XML
+    QHash<int, QString> pathHash;
     QDir setsDir;
-    QString loadSetFromXml(QXmlStreamReader &xml);
+    bool loadSetFromXml(QXmlStreamReader &xml, const int setCounter);
 };
 
 #endif // CARDDB_H

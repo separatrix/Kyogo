@@ -115,6 +115,13 @@
     </property>
     <addaction name="actionNew_Card"/>
    </widget>
+   <widget class="QMenu" name="menuFile_2">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionWrite"/>
+   </widget>
+   <addaction name="menuFile_2"/>
    <addaction name="menuFile"/>
    <addaction name="menuCard"/>
   </widget>
@@ -127,6 +134,11 @@
   <action name="actionNew_Card">
    <property name="text">
     <string>New Card</string>
+   </property>
+  </action>
+  <action name="actionWrite">
+   <property name="text">
+    <string>Write Changes</string>
    </property>
   </action>
  </widget>
